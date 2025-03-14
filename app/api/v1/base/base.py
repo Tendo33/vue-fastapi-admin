@@ -7,7 +7,7 @@ from app.core.ctx import CTX_USER_ID
 from app.core.dependency import DependAuth
 from app.models.admin import Api, Menu, Role, User
 from app.schemas.base import Fail, Success
-from app.schemas.login import *
+from app.schemas.login import CredentialsSchema, JWTOut, JWTPayload
 from app.schemas.users import UpdatePassword
 from app.settings import settings
 from app.utils.jwt import create_access_token
