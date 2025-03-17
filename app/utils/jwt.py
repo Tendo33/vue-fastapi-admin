@@ -5,6 +5,7 @@ from app.settings.config import settings  # 导入应用程序的配置参数
 
 
 # 定义一个函数用于创建访问令牌，接收一个 JWTPayload 类型的数据
+# 后面的所有参数都必须是关键字参数，不能通过位置传递。
 def create_access_token(*, data: JWTPayload):
     # 将数据模型转换为字典并复制，以便后续操作
     payload = data.model_dump().copy()
