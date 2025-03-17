@@ -191,7 +191,7 @@ async def init_apis():
 
 # 初始化数据库
 async def init_db():
-    # 创建一个命令对象，用于执行数据库相关操作
+    # aerich 创建一个命令对象，用于执行数据库相关操作
     command = Command(tortoise_config=settings.TORTOISE_ORM)
     # 尝试初始化数据库，如果数据库已存在则忽略
     try:

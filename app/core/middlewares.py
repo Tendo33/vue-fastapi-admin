@@ -21,15 +21,15 @@ class SimpleBaseMiddleware:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
+        if scope["type"] != "http":  # 如果请求类型不是HTTP，直接传递给下一个中间件或应用
             await self.app(scope, receive, send)
             return
 
         request = Request(scope, receive=receive)
 
-        response = await self.before_request(request) or self.app
-        await response(request.scope, request.receive, send)
-        await self.after_request(request)
+        response = await self.before_request(request) or self.app  # 执行前置处理
+        await response(request.scope, request.receive, send)  # 继续处理请求
+        await self.after_request(request)  # 执行后置处理
 
     async def before_request(self, request: Request):
         return self.app
@@ -40,18 +40,18 @@ class SimpleBaseMiddleware:
 
 class BackGroundTaskMiddleware(SimpleBaseMiddleware):
     async def before_request(self, request):
-        await BgTasks.init_bg_tasks_obj()
+        await BgTasks.init_bg_tasks_obj()  # 初始化后台任务对象
 
     async def after_request(self, request):
-        await BgTasks.execute_tasks()
+        await BgTasks.execute_tasks()  # 执行后台任务
 
 
 class HttpAuditLogMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, methods: list[str], exclude_paths: list[str]):
         super().__init__(app)
-        self.methods = methods
-        self.exclude_paths = exclude_paths
-        self.audit_log_paths = ["/api/v1/auditlog/list"]
+        self.methods = methods  # 需要记录日志的HTTP方法
+        self.exclude_paths = exclude_paths  # 不需要记录日志的路径
+        self.audit_log_paths = ["/api/v1/auditlog/list"]  # 需要特殊处理的审计日志路径
         self.max_body_size = 1024 * 1024  # 1MB 响应体大小限制
 
     async def get_request_args(self, request: Request) -> dict:
@@ -149,7 +149,7 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
 
     async def before_request(self, request: Request):
         request_args = await self.get_request_args(request)
-        request.state.request_args = request_args
+        request.state.request_args = request_args  # 将请求参数存储在request.state中
 
     async def after_request(self, request: Request, response: Response, process_time: int):
         if request.method in self.methods:
@@ -161,7 +161,7 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
 
             data["request_args"] = request.state.request_args
             data["response_body"] = await self.get_response_body(request, response)
-            await AuditLog.create(**data)
+            await AuditLog.create(**data)  # 创建审计日志记录
 
         return response
 
@@ -170,6 +170,6 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
         await self.before_request(request)
         response = await call_next(request)
         end_time: datetime = datetime.now()
-        process_time = int((end_time.timestamp() - start_time.timestamp()) * 1000)
+        process_time = int((end_time.timestamp() - start_time.timestamp()) * 1000)  # 计算处理时间
         await self.after_request(request, response, process_time)
         return response
