@@ -68,7 +68,7 @@ async def init_superuser():
     user = await user_controller.model.exists()
     if not user:
         await user_controller.create_user(
-            UserCreate(
+            obj_in=UserCreate(
                 username="admin",
                 email="admin@admin.com",
                 password="123456",
