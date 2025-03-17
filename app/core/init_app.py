@@ -6,6 +6,7 @@ from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.expressions import Q
 
+# 导入自定义模块
 from app.api import api_router
 from app.controllers.api import api_controller
 from app.controllers.user import UserCreate, user_controller
@@ -29,6 +30,7 @@ from app.settings.config import settings
 from .middlewares import BackGroundTaskMiddleware, HttpAuditLogMiddleware
 
 
+# 定义中间件
 def make_middlewares():
     middleware = [
         Middleware(
@@ -52,6 +54,7 @@ def make_middlewares():
     return middleware
 
 
+# 注册异常处理器
 def register_exceptions(app: FastAPI):
     app.add_exception_handler(DoesNotExist, DoesNotExistHandle)
     app.add_exception_handler(HTTPException, HttpExcHandle)
@@ -60,10 +63,12 @@ def register_exceptions(app: FastAPI):
     app.add_exception_handler(ResponseValidationError, ResponseValidationHandle)
 
 
+# 注册路由
 def register_routers(app: FastAPI, prefix: str = "/api"):
     app.include_router(api_router, prefix=prefix)
 
 
+# 初始化超级用户
 async def init_superuser():
     user = await user_controller.model.exists()
     if not user:
@@ -78,6 +83,7 @@ async def init_superuser():
         )
 
 
+# 初始化菜单
 async def init_menus():
     menus = await Menu.exists()
     if not menus:
@@ -176,20 +182,26 @@ async def init_menus():
         )
 
 
+# 初始化API
 async def init_apis():
     apis = await api_controller.model.exists()
     if not apis:
         await api_controller.refresh_api()
 
 
+# 初始化数据库
 async def init_db():
+    # 创建一个命令对象，用于执行数据库相关操作
     command = Command(tortoise_config=settings.TORTOISE_ORM)
+    # 尝试初始化数据库，如果数据库已存在则忽略
     try:
         await command.init_db(safe=True)
     except FileExistsError:
         pass
 
+    # 初始化数据库连接
     await command.init()
+    # 尝试执行数据库迁移，如果迁移失败则创建新的迁移目录
     try:
         await command.migrate()
     except AttributeError:
@@ -197,9 +209,11 @@ async def init_db():
         shutil.rmtree("migrations")
         await command.init_db(safe=True)
 
+    # 执行数据库升级
     await command.upgrade(run_in_transaction=True)
 
 
+# 初始化角色
 async def init_roles():
     roles = await Role.exists()
     if not roles:
@@ -225,6 +239,7 @@ async def init_roles():
         await user_role.apis.add(*basic_apis)
 
 
+# 初始化数据
 async def init_data():
     await init_db()
     await init_superuser()
