@@ -10,7 +10,7 @@ class BaseApi(BaseModel):
     tags: str = Field(..., description="API标签", example="User")
 
 
-class ApiCreate(BaseApi): ...
+class ApiCreate(BaseApi): ... # 等于 pass
 
 
 class ApiUpdate(BaseApi):
